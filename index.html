@@ -51,6 +51,7 @@
         .btn-zeus {
             padding: 15px 40px;
             width: 300px;
+            margin: 10px;
             font-size: 16px;
             color: #00f2ff;
             border: 2px solid #00f2ff;
@@ -61,7 +62,7 @@
             cursor: pointer;
         }
 
-        /* CONTENEDOR MAESTRO: ESTO ES LO QUE SE ADAPTA */
+        /* CONTENEDOR MAESTRO */
         .contenedor-cine {
             position: relative;
             width: 100vw;
@@ -72,16 +73,12 @@
             background: #000;
         }
 
-        /* EL TRUCO: Zoom y posición calculada por porcentaje (%) en lugar de píxeles */
+        /* El iframe ahora es controlado totalmente por JS */
         iframe {
             position: absolute;
-            width: 100%;
-            height: 190%; /* Altura extra para el recorte */
-            top: -50%;    /* Centrado vertical proporcional */
-            left: 0;
             border: none;
-            transform: scale(1.1); /* Zoom ligero para eliminar bordes */
-            transform-origin: center center;
+            left: 0;
+            transform-origin: top center;
         }
 
         #escudo-zeus {
@@ -117,7 +114,7 @@
 
     <div class="overlay-inicio" id="menu">
         <h2 style="color: #00f2ff; letter-spacing: 5px;">ZEUS CORE SYSTEM</h2>
-        <div id="lista-botones" style="display: flex; flex-direction: column; gap: 15px;"></div>
+        <div id="lista-botones"></div>
     </div>
 
     <div class="panel-controles" id="controles">
@@ -134,9 +131,36 @@
             { nombre: "Win Sports Premium", url: "https://futbol-libre.su/win-sports-premium/" }
         ];
 
-        const listaBotones = document.getElementById('lista-botones');
         const videoFrame = document.getElementById('video-frame');
         const escudo = document.getElementById('escudo-zeus');
+
+        // FUNCIÓN MÁGICA DE AUTO-AJUSTE
+        function ajustarResolucion() {
+            const h = window.innerHeight;
+            const w = window.innerWidth;
+            
+            // Si es una pantalla grande (PC o TV 4K/1080p)
+            if (w > 1200) {
+                videoFrame.style.width = "100%";
+                videoFrame.style.height = (h * 1.8) + "px"; // Aumentamos altura para el recorte
+                videoFrame.style.top = "-" + (h * 0.45) + "px"; // Subimos el video proporcionalmente
+                videoFrame.style.transform = "scale(1.2)";
+            } 
+            // Si es una Smart TV mediana o Tablet
+            else if (w <= 1200 && w > 600) {
+                videoFrame.style.width = "100%";
+                videoFrame.style.height = "100%";
+                videoFrame.style.top = "0";
+                videoFrame.style.transform = "scale(1.0)";
+            }
+            // Si es un celular
+            else {
+                videoFrame.style.width = "100%";
+                videoFrame.style.height = "100%";
+                videoFrame.style.top = "0";
+                videoFrame.style.transform = "scale(1.0)";
+            }
+        }
 
         canales.forEach((canal) => {
             const boton = document.createElement('button');
@@ -153,7 +177,10 @@
                 document.getElementById('cine-display').style.display = 'block';
                 document.getElementById('nombre-display').innerText = `ZEUS CORE: ${canal.nombre}`;
                 
+                // Ejecutamos el ajuste antes de cargar
+                ajustarResolucion();
                 videoFrame.src = canal.url;
+                
                 escudo.style.display = 'block';
                 escudo.style.pointerEvents = 'none';
 
@@ -164,8 +191,11 @@
                     }
                 }, 100);
             };
-            listaBotones.appendChild(boton);
+            document.getElementById('lista-botones').appendChild(boton);
         });
+
+        // Re-ajustar si se gira el celular o se cambia el tamaño de ventana
+        window.onresize = ajustarResolucion;
     </script>
 </body>
 </html>
