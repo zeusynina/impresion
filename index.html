@@ -13,14 +13,13 @@
             font-family: 'Segoe UI', sans-serif;
         }
 
-        /* FRANJA SUPERIOR */
         .franja-marca {
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 35px; 
             background: #050505;
             border-bottom: 2px solid #00f2ff;
-            display: none; /* Se activa al elegir canal */
+            display: none;
             align-items: center;
             justify-content: center;
             z-index: 10005;
@@ -34,7 +33,6 @@
             font-size: 13px;
         }
 
-        /* MENU DE SELECCIÓN */
         .overlay-inicio {
             position: fixed;
             top: 0; left: 0;
@@ -61,32 +59,22 @@
             cursor: pointer;
         }
 
-        /* CONTENEDOR DE VIDEO: FORZADO CON FLEX */
         .contenedor-cine {
             position: fixed;
-            top: 35px; /* Debajo de la franja */
+            top: 35px;
             left: 0;
             width: 100vw;
             height: calc(100vh - 35px);
             display: none; 
             background: #000;
-            /* Flexbox obliga al hijo a llenar el espacio */
-            display: none; 
             flex-direction: column;
         }
 
         iframe {
-            flex-grow: 1; /* Esto obliga al iframe a ocupar TODO el alto disponible */
+            flex-grow: 1;
             width: 100%;
             border: none;
             background: #000;
-        }
-
-        #escudo-zeus {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: 100;
         }
 
         .panel-controles {
@@ -123,7 +111,6 @@
     </div>
 
     <div class="contenedor-cine" id="cine-display">
-        <div id="escudo-zeus" style="display: none;"></div>
         <iframe id="video-frame" src="" allow="autoplay; encrypted-media; fullscreen" scrolling="no"></iframe>
     </div>
 
@@ -137,22 +124,37 @@
         const videoFrame = document.getElementById('video-frame');
         const cineDisplay = document.getElementById('cine-display');
 
+        async function forzarRotacion() {
+            try {
+                // Primero intentamos entrar en pantalla completa (necesario para rotar)
+                const doc = document.documentElement;
+                if (doc.requestFullscreen) await doc.requestFullscreen();
+                else if (doc.webkitRequestFullscreen) await doc.webkitRequestFullscreen();
+
+                // Intentamos bloquear la orientación a horizontal
+                if (screen.orientation && screen.orientation.lock) {
+                    await screen.orientation.lock('landscape');
+                }
+            } catch (error) {
+                console.log("La rotación automática fue bloqueada o no es soportada:", error);
+            }
+        }
+
         canales.forEach((canal) => {
             const boton = document.createElement('button');
             boton.className = 'btn-zeus';
             boton.innerText = canal.nombre;
-            boton.onclick = () => {
-                const doc = document.documentElement;
-                if (doc.requestFullscreen) doc.requestFullscreen();
+            boton.onclick = async () => {
+                // Ejecutar rotación y pantalla completa
+                await forzarRotacion();
                 
                 document.getElementById('menu-canales').style.display = 'none';
                 document.getElementById('barra-titulo').style.display = 'flex';
                 document.getElementById('controles').style.display = 'block';
                 
-                // Mostrar contenedor con Flex
                 cineDisplay.style.display = 'flex';
                 
-                // Aplicar altura manual por si el CSS falla en la TV
+                // Ajuste de altura forzado
                 videoFrame.style.height = (window.innerHeight - 35) + "px";
                 videoFrame.src = canal.url;
                 
@@ -161,7 +163,6 @@
             document.getElementById('lista-botones').appendChild(boton);
         });
 
-        // Corregir tamaño si se redimensiona (cambio de resolución en TV)
         window.onresize = () => {
             if (cineDisplay.style.display === 'flex') {
                 videoFrame.style.height = (window.innerHeight - 35) + "px";
