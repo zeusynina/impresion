@@ -46,12 +46,12 @@
             justify-content: center;
             align-items: center;
             z-index: 10010;
+            gap: 15px;
         }
 
         .btn-zeus {
             padding: 15px 40px;
-            width: 300px;
-            margin: 10px;
+            width: 320px;
             font-size: 16px;
             color: #00f2ff;
             border: 2px solid #00f2ff;
@@ -62,7 +62,7 @@
             cursor: pointer;
         }
 
-        /* CONTENEDOR MAESTRO */
+        /* CONTENEDOR DE VIDEO */
         .contenedor-cine {
             position: relative;
             width: 100vw;
@@ -73,12 +73,38 @@
             background: #000;
         }
 
-        /* El iframe ahora es controlado totalmente por JS */
+        /* IFRAME: Sin valores fijos iniciales */
         iframe {
             position: absolute;
-            border: none;
             left: 0;
-            transform-origin: top center;
+            border: none;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* BOTONES DE AJUSTE RÁPIDO PARA TV */
+        .selector-ajuste {
+            position: fixed;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: none;
+            z-index: 10007;
+            gap: 10px;
+            background: rgba(0,0,0,0.8);
+            padding: 10px;
+            border-radius: 20px;
+            border: 1px solid #00f2ff;
+        }
+
+        .btn-modo {
+            background: #000;
+            color: #00f2ff;
+            border: 1px solid #00f2ff;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 10px;
+            cursor: pointer;
         }
 
         #escudo-zeus {
@@ -97,8 +123,8 @@
 
         .btn-volver {
             background: rgba(10, 10, 10, 0.9);
-            color: #00f2ff;
-            border: 1px solid #00f2ff;
+            color: #ff4444;
+            border: 1px solid #ff4444;
             padding: 8px 18px;
             cursor: pointer;
             font-size: 11px;
@@ -114,7 +140,13 @@
 
     <div class="overlay-inicio" id="menu">
         <h2 style="color: #00f2ff; letter-spacing: 5px;">ZEUS CORE SYSTEM</h2>
-        <div id="lista-botones"></div>
+        <div id="lista-botones" style="display:flex; flex-direction:column; gap:10px;"></div>
+    </div>
+
+    <!-- Selector de emergencia si se ve negro -->
+    <div class="selector-ajuste" id="selector">
+        <button class="btn-modo" onclick="aplicarModo('pc')">MODO PC (RECORTE)</button>
+        <button class="btn-modo" onclick="aplicarModo('tv')">MODO TV (PANTALLA COMPLETA)</button>
     </div>
 
     <div class="panel-controles" id="controles">
@@ -134,28 +166,14 @@
         const videoFrame = document.getElementById('video-frame');
         const escudo = document.getElementById('escudo-zeus');
 
-        // FUNCIÓN MÁGICA DE AUTO-AJUSTE
-        function ajustarResolucion() {
+        function aplicarModo(tipo) {
             const h = window.innerHeight;
-            const w = window.innerWidth;
-            
-            // Si es una pantalla grande (PC o TV 4K/1080p)
-            if (w > 1200) {
-                videoFrame.style.width = "100%";
-                videoFrame.style.height = (h * 1.8) + "px"; // Aumentamos altura para el recorte
-                videoFrame.style.top = "-" + (h * 0.45) + "px"; // Subimos el video proporcionalmente
-                videoFrame.style.transform = "scale(1.2)";
-            } 
-            // Si es una Smart TV mediana o Tablet
-            else if (w <= 1200 && w > 600) {
-                videoFrame.style.width = "100%";
-                videoFrame.style.height = "100%";
-                videoFrame.style.top = "0";
-                videoFrame.style.transform = "scale(1.0)";
-            }
-            // Si es un celular
-            else {
-                videoFrame.style.width = "100%";
+            if (tipo === 'pc') {
+                videoFrame.style.height = "170%";
+                videoFrame.style.top = "-35%";
+                videoFrame.style.transform = "scale(1.1)";
+            } else {
+                // Modo TV: Forzar visualización limpia para evitar pantalla negra
                 videoFrame.style.height = "100%";
                 videoFrame.style.top = "0";
                 videoFrame.style.transform = "scale(1.0)";
@@ -169,16 +187,15 @@
             boton.onclick = () => {
                 const doc = document.documentElement;
                 if (doc.requestFullscreen) doc.requestFullscreen();
-                else if (doc.webkitRequestFullscreen) doc.webkitRequestFullscreen();
                 
                 document.getElementById('menu').style.display = 'none';
                 document.getElementById('barra-titulo').style.display = 'flex';
                 document.getElementById('controles').style.display = 'block';
+                document.getElementById('selector').style.display = 'flex';
                 document.getElementById('cine-display').style.display = 'block';
-                document.getElementById('nombre-display').innerText = `ZEUS CORE: ${canal.nombre}`;
                 
-                // Ejecutamos el ajuste antes de cargar
-                ajustarResolucion();
+                // Por defecto iniciamos en Modo TV para asegurar que se vea
+                aplicarModo('tv');
                 videoFrame.src = canal.url;
                 
                 escudo.style.display = 'block';
@@ -193,9 +210,6 @@
             };
             document.getElementById('lista-botones').appendChild(boton);
         });
-
-        // Re-ajustar si se gira el celular o se cambia el tamaño de ventana
-        window.onresize = ajustarResolucion;
     </script>
 </body>
 </html>
