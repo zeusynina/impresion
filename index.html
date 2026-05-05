@@ -7,18 +7,16 @@
 <title>ZEUS CORE TV PRO</title>
 
 <style>
-* { box-sizing: border-box; }
-
 body, html {
     margin: 0;
     padding: 0;
     background: #000;
     font-family: 'Segoe UI', sans-serif;
     color: #fff;
-    height: 100%;
+    overflow: hidden;
 }
 
-/* APP */
+/* LAYOUT */
 .app {
     display: flex;
     height: 100dvh;
@@ -30,6 +28,7 @@ body, html {
     background: #050505;
     border-right: 2px solid #00f2ff;
     padding: 15px;
+    box-sizing: border-box;
     overflow-y: auto;
     transition: 0.3s;
 }
@@ -37,12 +36,14 @@ body, html {
 .sidebar h2 {
     color: #00f2ff;
     font-size: 13px;
+    letter-spacing: 2px;
 }
 
 .canal {
     padding: 8px;
     cursor: pointer;
     border-radius: 5px;
+    margin-bottom: 5px;
 }
 
 .canal:hover {
@@ -54,24 +55,35 @@ body, html {
 .main {
     flex: 1;
     position: relative;
+    background: black;
 }
 
-/* 🎯 IFRAME NORMAL (PC + MÓVIL) */
 iframe {
-    position: absolute;
-    top: 0;
-    left: 0;
     width: 100%;
     height: 100%;
     border: none;
 }
 
-/* 📺 MODO TV AUTOMÁTICO */
-.tv-mode iframe {
-    top: -120px;
-    height: calc(100% + 250px);
-    transform: scale(1.2);
-    transform-origin: top center;
+/* BLOQUEADOR ANTI POPUPS */
+#bloqueador {
+    position: absolute;
+    top: 40px;
+    left: 0;
+    width: 100%;
+    height: calc(100% - 40px);
+    z-index: 9;
+    background: transparent;
+}
+
+/* FRANJA QUE TAPA HEADER DEL STREAM */
+#franja-oculta {
+    position: absolute;
+    top: 5px;   /* 🔼 sube más la franja */
+    width: 150%;
+    height: 118px; /* 🔼 más alta para tapar TODO */
+    background: black;
+    z-index: 8;
+    pointer-events: none;
 }
 
 /* TOPBAR */
@@ -81,7 +93,7 @@ iframe {
     left: 0;
     width: 100%;
     height: 40px;
-    background: rgba(0,0,0,0.85);
+    background: rgba(0,0,0,0.8);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -97,33 +109,14 @@ iframe {
 /* CONTROLES */
 .controles {
     display: flex;
-    gap: 6px;
+    gap: 5px;
 }
 
 select, button {
     background: black;
     border: 1px solid #00f2ff;
     color: #00f2ff;
-}
-
-/* BLOQUEADOR */
-#bloqueador {
-    position: absolute;
-    top: 40px;
-    width: 100%;
-    height: calc(100% - 40px);
-    z-index: 9;
-}
-
-/* FRANJA NEGRA */
-#franja-oculta {
-    position: absolute;
-    top: 20px;
-    width: 100%;
-    height: 160px;
-    background: black;
-    z-index: 8;
-    pointer-events: none;
+    cursor: pointer;
 }
 
 /* MOBILE */
@@ -135,17 +128,15 @@ select, button {
     .sidebar {
         position: absolute;
         left: -250px;
+        top: 0;
         height: 100%;
         z-index: 20;
     }
-
     .sidebar.active {
         left: 0;
     }
-
     .menu-btn {
         display: block;
-        cursor: pointer;
     }
 }
 </style>
@@ -154,9 +145,13 @@ select, button {
 
 <body>
 
-<div class="app" id="app">
+<div class="app">
+
+<!-- SIDEBAR -->
 
 <div class="sidebar" id="sidebar"></div>
+
+<!-- MAIN -->
 
 <div class="main">
 
@@ -180,8 +175,15 @@ select, button {
 
 </div>
 
+<!-- BLOQUEADOR -->
+
 <div id="bloqueador"></div>
+
+<!-- FRANJA NEGRA -->
+
 <div id="franja-oculta"></div>
+
+<!-- PLAYER -->
 
 <iframe id="player"
 sandbox="allow-scripts allow-same-origin allow-presentation"
@@ -193,25 +195,8 @@ allow="autoplay; fullscreen">
 
 <script>
 
-/* 🔥 DETECCIÓN AUTOMÁTICA DE TV */
-function detectarTV() {
-    const ancho = window.innerWidth;
-    const userAgent = navigator.userAgent.toLowerCase();
-
-    if (
-        ancho > 1200 || 
-        userAgent.includes("smarttv") ||
-        userAgent.includes("tizen") ||
-        userAgent.includes("webos")
-    ) {
-        document.getElementById("app").classList.add("tv-mode");
-    }
-}
-
-detectarTV();
-
-/* BLOQUEO POPUPS */
-window.open = () => null;
+/* BLOQUEO EXTRA */
+window.open = function(){ return null; };
 
 /* DATA */
 const data = {
@@ -251,69 +236,70 @@ const titulo = document.getElementById("titulo");
 const calidad = document.getElementById("calidad");
 const bloqueador = document.getElementById("bloqueador");
 
-let canalActual = null;
+let canalActual=null;
 
 /* CREAR MENU */
-for (let cat in data) {
-    let cont = document.createElement("div");
-    let h = document.createElement("h2");
-    h.innerText = cat;
-    cont.appendChild(h);
+for(let cat in data){
+let div=document.createElement("div");
+let h=document.createElement("h2");
+h.innerText=cat;
+div.appendChild(h);
 
-    data[cat].forEach(c => {
-        let btn = document.createElement("div");
-        btn.className = "canal";
-        btn.innerText = c.nombre;
+data[cat].forEach(c=>{
+let btn=document.createElement("div");
+btn.className="canal";
+btn.innerText=c.nombre;
 
-        btn.onclick = () => {
-            canalActual = c;
-            cargar();
-            cerrarMenu();
-        };
+btn.onclick=()=>{
+canalActual=c;
+cargar();
+cerrarMenu();
+};
 
-        cont.appendChild(btn);
-    });
+div.appendChild(btn);
+});
 
-    sidebar.appendChild(cont);
+sidebar.appendChild(div);
 }
 
 /* CARGAR */
 function cargar(){
-    if(!canalActual) return;
+if(!canalActual)return;
 
-    let url = canalActual.urls[calidad.value];
-    player.src = url;
+let url=canalActual.urls[calidad.value];
+player.src=url;
 
-    titulo.innerText = canalActual.nombre + " (" + calidad.value + ")";
-    bloqueador.style.pointerEvents = "auto";
+titulo.innerText=canalActual.nombre+" ("+calidad.value+")";
+
+/* activar bloqueo siempre */
+bloqueador.style.pointerEvents="auto";
 }
 
-/* CALIDAD */
-calidad.addEventListener("change", cargar);
+/* CAMBIO CALIDAD */
+calidad.addEventListener("change",cargar);
 
-/* INTERACTUAR */
+/* PERMITIR INTERACCION */
 function permitirClicks(){
-    bloqueador.style.pointerEvents = "none";
+bloqueador.style.pointerEvents="none";
 }
 
 /* VOLVER */
 function volver(){
-    player.src = "";
-    canalActual = null;
-    titulo.innerText = "ZEUS TV";
+player.src="";
+titulo.innerText="ZEUS TV";
+canalActual=null;
 }
 
 /* MENU */
 function toggleMenu(){
-    sidebar.classList.toggle("active");
+sidebar.classList.toggle("active");
 }
 function cerrarMenu(){
-    sidebar.classList.remove("active");
+sidebar.classList.remove("active");
 }
 
 </script>
 
 </body>
 </html>
-
 
