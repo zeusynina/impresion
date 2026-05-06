@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ZEUS CORE TV PRO</title>
+<title>ZEUS TV PRO</title>
 
 <style>
 * { box-sizing: border-box; }
@@ -12,63 +12,18 @@
 body, html {
     margin: 0;
     padding: 0;
-    background: #000;
+    background: black;
     font-family: 'Segoe UI', sans-serif;
-    color: #fff;
-    height: 100%;
+    color: white;
 }
 
-/* APP */
-.app {
-    display: flex;
-    height: 100vh;
-}
-
-/* SIDEBAR */
-.sidebar {
-    width: 250px;
-    background: #050505;
-    border-right: 2px solid #00f2ff;
-    padding: 15px;
-    overflow-y: auto;
-}
-
-/* 🔥 TÍTULOS MÁS A LA DERECHA */
-.sidebar h2 {
-    color: #00f2ff;
-    font-size: 13px;
-    padding-left: 30px;
-    margin-bottom: 10px;
-}
-
-/* 🔥 CANALES MÁS A LA DERECHA */
-.canal {
-    padding: 10px 10px 10px 40px; /* 👈 mueve texto a la derecha */
-    cursor: pointer;
-    border-radius: 5px;
-    font-weight: bold;
-    transition: 0.2s;
-}
-
-.canal:hover {
-    background: #00f2ff;
-    color: #000;
-    transform: scale(1.05);
-}
-
-/* MAIN */
-.main {
-    flex: 1;
-    position: relative;
-}
-
-/* VIDEO */
+/* 🎬 VIDEO */
 iframe {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
-    height: calc(100% - 100px);
+    height: calc(100% - 80px);
     border: none;
 }
 
@@ -78,43 +33,40 @@ iframe {
     height: calc(100% + 300px);
 }
 
-/* FRANJA ARRIBA */
-#franja-oculta {
-    position: absolute;
-    top: 20px;
-    width: 100%;
-    height: 160px;
-    background: black;
-    z-index: 8;
-    pointer-events: none;
-}
-
-/* FRANJA ABAJO */
+/* 🔽 FRANJA ABAJO */
 #franja-player {
     position: absolute;
     bottom: 0;
     width: 100%;
-    height: 100px;
+    height: 80px;
     background: black;
-    z-index: 7;
 }
 
-/* BLOQUEADOR */
+/* 🔼 FRANJA ARRIBA */
+#franja-oculta {
+    position: absolute;
+    top: 20px;
+    width: 100%;
+    height: 150px;
+    background: black;
+    pointer-events: none;
+}
+
+/* 🛡️ BLOQUEADOR */
 #bloqueador {
     position: absolute;
     top: 40px;
     width: 100%;
     height: calc(100% - 40px);
-    z-index: 9;
 }
 
-/* TOPBAR */
+/* 🔝 TOPBAR */
 .topbar {
     position: absolute;
     top: 0;
     width: 100%;
     height: 40px;
-    background: rgba(0,0,0,0.85);
+    background: rgba(0,0,0,0.8);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -122,43 +74,62 @@ iframe {
     z-index: 10;
 }
 
-.titulo {
-    color: #00f2ff;
-    font-size: 12px;
-}
-
-.controles {
-    display: flex;
-    gap: 5px;
-}
-
-select, button {
+button {
     background: black;
     border: 1px solid #00f2ff;
     color: #00f2ff;
     cursor: pointer;
 }
 
-/* BOTÓN FALLBACK */
-#abrirDirecto {
-    display: none;
-    position: absolute;
-    bottom: 120px;
-    left: 20px;
-    z-index: 20;
+/* 🔥 MENÚ FULL */
+#menu {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: black;
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-y: auto;
+    padding-top: 40px;
 }
 
-/* MOBILE */
-@media(max-width:768px){
-    .sidebar {
-        position: absolute;
-        left: -250px;
-        height: 100%;
-        z-index: 20;
-    }
-    .sidebar.active {
-        left: 0;
-    }
+.categoria {
+    width: 100%;
+    max-width: 800px;
+}
+
+.categoria h2 {
+    color: #00f2ff;
+    text-align: center;
+}
+
+/* 🎯 BOTONES GRANDES */
+.canal {
+    width: 100%;
+    padding: 20px;
+    margin: 10px 0;
+    text-align: center;
+    border: 2px solid #00f2ff;
+    cursor: pointer;
+    font-size: 18px;
+}
+
+.canal:hover {
+    background: #00f2ff;
+    color: black;
+    transform: scale(1.05);
+}
+
+/* 🆘 BOTÓN FALLBACK */
+#abrirDirecto {
+    position: absolute;
+    bottom: 100px;
+    left: 20px;
+    display: none;
 }
 </style>
 
@@ -166,21 +137,11 @@ select, button {
 
 <body>
 
-<div class="app" id="app">
-
-<div class="sidebar" id="sidebar"></div>
-
-<div class="main">
+<div id="menu"></div>
 
 <div class="topbar">
-    <div class="titulo" id="titulo">ZEUS TV</div>
-    <div class="controles">
-        <select id="calidad">
-            <option value="auto">AUTO</option>
-            <option value="sd">SD</option>
-            <option value="hd">HD</option>
-        </select>
-        <button onclick="permitirClicks()">INTERACTUAR</button>
+    <div id="titulo">ZEUS TV</div>
+    <div>
         <button onclick="volver()">VOLVER</button>
     </div>
 </div>
@@ -188,86 +149,45 @@ select, button {
 <div id="bloqueador"></div>
 <div id="franja-oculta"></div>
 
-<iframe id="player"
-sandbox="allow-scripts allow-same-origin allow-presentation"
-allow="autoplay; fullscreen">
-</iframe>
+<iframe id="player"></iframe>
 
 <div id="franja-player"></div>
 
-<button id="abrirDirecto">Abrir canal directo</button>
-
-</div>
-</div>
+<button id="abrirDirecto">Abrir directo</button>
 
 <script>
 
-/* DETECCIÓN TV */
+/* DETECTAR TV */
 function detectarTV() {
     const ua = navigator.userAgent.toLowerCase();
 
-    if (
-        ua.includes("smarttv") ||
-        ua.includes("tizen") ||
-        ua.includes("webos") ||
-        ua.includes("netcast") ||
-        ua.includes("viera") ||
-        ua.includes("appletv") ||
-        ua.includes("hbbtv") ||
-        window.innerWidth > 1300
-    ) {
-        document.getElementById("app").classList.add("tv-mode");
+    if (ua.includes("smarttv") || ua.includes("tizen") || ua.includes("webos") || window.innerWidth > 1300) {
+        document.body.classList.add("tv-mode");
     }
 }
 detectarTV();
 
-/* BLOQUEO POPUPS */
-window.open = () => null;
-
 /* DATA */
 const data = {
 "Deportes":[
-{
-nombre:"Win Sports+",
-urls:{
-auto:"https://futbol-libre.su/win-sports-premium/",
-sd:"https://futbol-libre.su/win-sports-premium/",
-hd:"https://futbol-libre.su/win-sports-premium/"
-}
-},
-{
-nombre:"ESPN",
-urls:{
-auto:"https://futbol-libre.su/espn-1/",
-sd:"https://futbol-libre.su/espn-1/",
-hd:"https://futbol-libre.su/espn-1/"
-}
-}
+{nombre:"Win Sports+", url:"https://futbol-libre.su/win-sports-premium/"},
+{nombre:"ESPN", url:"https://futbol-libre.su/espn-1/"}
 ],
 "Internacional":[
-{
-nombre:"Fox Sports",
-urls:{
-auto:"https://futbol-libre.su/fox-sports/",
-sd:"https://futbol-libre.su/fox-sports/",
-hd:"https://futbol-libre.su/fox-sports/"
-}
-}
+{nombre:"Fox Sports", url:"https://futbol-libre.su/fox-sports/"}
 ]
 };
 
-const sidebar = document.getElementById("sidebar");
+const menu = document.getElementById("menu");
 const player = document.getElementById("player");
 const titulo = document.getElementById("titulo");
-const calidad = document.getElementById("calidad");
-const bloqueador = document.getElementById("bloqueador");
 const btnDirecto = document.getElementById("abrirDirecto");
 
-let canalActual = null;
-
-/* MENU */
+/* CREAR MENÚ */
 for (let cat in data) {
     let cont = document.createElement("div");
+    cont.className = "categoria";
+
     let h = document.createElement("h2");
     h.innerText = cat;
     cont.appendChild(h);
@@ -278,46 +198,33 @@ for (let cat in data) {
         btn.innerText = c.nombre;
 
         btn.onclick = () => {
-            canalActual = c;
-            cargar();
+            abrirCanal(c);
         };
 
         cont.appendChild(btn);
     });
 
-    sidebar.appendChild(cont);
+    menu.appendChild(cont);
 }
 
-/* CARGAR */
-function cargar(){
-    if(!canalActual) return;
+/* ABRIR CANAL */
+function abrirCanal(c){
+    player.src = c.url;
+    titulo.innerText = c.nombre;
 
-    let url = canalActual.urls[calidad.value];
-    player.src = url;
-
-    titulo.innerText = canalActual.nombre;
-
-    bloqueador.style.pointerEvents = "auto";
+    menu.style.display = "none";
 
     btnDirecto.style.display = "block";
     btnDirecto.onclick = () => {
-        window.location.href = url;
+        window.location.href = c.url;
     };
-}
-
-/* CALIDAD */
-calidad.addEventListener("change", cargar);
-
-/* INTERACTUAR */
-function permitirClicks(){
-    bloqueador.style.pointerEvents = "none";
 }
 
 /* VOLVER */
 function volver(){
     player.src = "";
+    menu.style.display = "flex";
     titulo.innerText = "ZEUS TV";
-    canalActual = null;
     btnDirecto.style.display = "none";
 }
 
